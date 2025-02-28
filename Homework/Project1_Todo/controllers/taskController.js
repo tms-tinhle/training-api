@@ -47,10 +47,7 @@ exports.getTasks = async (req, res) => {
             .limit(Number(limit))
             .skip(skip);
 
-        const total = await Todo.countDocuments(filter);
-
         res.json({
-            total,
             page: Number(page),
             totalPages: Math.ceil(total / limit),
             todos,
@@ -59,6 +56,8 @@ exports.getTasks = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
 
 /**
  * @route POST /todos
