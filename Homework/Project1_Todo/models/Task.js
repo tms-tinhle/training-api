@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const todoSchema = new mongoose.Schema({
+const taskSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true
@@ -26,6 +26,6 @@ const todoSchema = new mongoose.Schema({
     }
 });
 // Tạo index text cho title và description
-todoSchema.index({ title: "text", description: "text" });
+taskSchema.index({ title: "text", description: "text" });
 
-module.exports = mongoose.model('Todo', todoSchema);
+module.exports = mongoose.model('Task', taskSchema);
