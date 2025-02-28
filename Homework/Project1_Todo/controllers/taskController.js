@@ -1,4 +1,4 @@
-const Todo = require("../models/Todo");
+const Todo = require("../models/Task");
 
 /**
  * @route GET /todos
@@ -20,7 +20,7 @@ const Todo = require("../models/Todo");
  * // Lấy danh sách todos với trạng thái "pending" và sắp xếp theo ngày hết hạn giảm dần
  * GET /todos?status=pending&sort=-dueDate
  */
-exports.getTodos = async (req, res) => {
+exports.getTasks = async (req, res) => {
     const { status, search, sort = "-createdAt", limit = 10, page = 1, fromDate, toDate } = req.query;
     const filter = {};
 
@@ -79,7 +79,7 @@ exports.getTodos = async (req, res) => {
  * "dueDate": "2025-02-28"
  * }
  */
-exports.createTodo = async (req, res) => {
+exports.createTask = async (req, res) => {
     try {
         const { title, description, status, dueDate } = req.body;
         const createdBy = req.user.id;
@@ -109,7 +109,7 @@ exports.createTodo = async (req, res) => {
  * "status": "pending"
  * }
  */
-exports.updateTodo = async (req, res) => {
+exports.updateTask = async (req, res) => {
     try {
         const todo = await Todo.findOne({ _id: req.params.id, createdBy: req.user.id });
         if (!todo) return res.status(404).json({ message: "Todo not found" });
@@ -133,7 +133,7 @@ exports.updateTodo = async (req, res) => {
  * // Xóa todo với ID "123"
  * DELETE /todos/123
  */
-exports.deleteTodo = async (req, res) => {
+exports.deleteTask = async (req, res) => {
     try {
         const todo = await Todo.findOne({ _id: req.params.id, createdBy: req.user.id });
         if (!todo) return res.status(404).json({ message: "Todo not found" });
