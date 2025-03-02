@@ -90,21 +90,3 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
-/**
- * @route GET /users/profile
- * @desc Lấy thông tin cá nhân của người dùng hiện tại.
- * @access Private (User)
- * @returns {object} response.user - Thông tin người dùng hiện tại (ẩn password).
- * @throws {404} - Người dùng không tồn tại.
- * @throws {500} - Lỗi server.
- */
-exports.getProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select("-password");
-        if (!user) return res.status(404).json({ message: "User not found" });
-
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ message: "Server error" });
-    }
-};

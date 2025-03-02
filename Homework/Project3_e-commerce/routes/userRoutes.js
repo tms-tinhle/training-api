@@ -27,10 +27,4 @@ router.put("/:id", authenticate, authorize(["user", "admin"]), userController.up
  */
 router.delete("/:id", authenticate, authorize(["admin"]), userController.deleteUser);
 
-/**
- * @route GET /users/profile
- * @desc Lấy thông tin cá nhân của người dùng hiện tại.
- */
-router.get("/profile", authenticate, userController.getProfile);
-
 module.exports = router;
