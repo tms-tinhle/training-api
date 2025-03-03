@@ -3,6 +3,13 @@ const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
 
+
+// Validation functions
+const isValidEmail = (email) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email);
+const isValidPassword = (password) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+const isValidName = (name) => /^[a-zA-Z\s]+$/.test(name);
+const isValidToken = (token) => /^[a-z0-9]+$/.test(token);
+
 // Middleware for authentication
 const authenticate = async (req, res, next) => {
     try {
@@ -48,18 +55,20 @@ const sendEmail = async (to, subject, text) => {
 };
 
 // 1. Register
+// Register
 router.post('/register', async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
-        if (role && !["user", "admin"].includes(role)) {
-            return res.status(400).json({ message: "Invalid role" });
+        if (!isValidName(name) || !isValidEmail(email) || !isValidPassword(password)) {
+            return res.status(400).json({ msg: 'Invalid input data' });
         }
+        if (role && !["user", "admin"].includes(role)) return res.status(400).json({ msg: "Invalid role" });
 
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ msg: 'User already exists' });
 
         const verifyToken = Math.random().toString(36).substr(2);
-        const verifyTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        const verifyTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
 
         const newUser = new User({ name, email, password, role, verifyToken, verifyTokenExpires });
         await newUser.save();
@@ -69,11 +78,9 @@ router.post('/register', async (req, res) => {
 
         res.json({ msg: 'User created, check email for verification' });
     } catch (err) {
-        console.error(err);
         res.status(500).json({ msg: err.message });
     }
 });
-
 // 2. Verify account
 router.get('/verify/:token', async (req, res) => {
     try {
@@ -97,8 +104,11 @@ router.get('/verify/:token', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        if (!isValidEmail(email) || !isValidPassword(password)) {
+            return res.status(400).json({ msg: 'Invalid credentials' });
+        }
 
+        const user = await User.findOne({ email });
         if (!user || !user.checkPassword(password)) return res.status(400).json({ msg: "Invalid credentials" });
         if (!user.isVerified) return res.status(400).json({ msg: "Email not verified" });
 
@@ -168,21 +178,21 @@ router.get('/', authenticate, authorization(["admin"]), async (req, res) => {
 router.post('/password/reset', async (req, res) => {
     try {
         const { email } = req.body;
+        if (!isValidEmail(email)) return res.status(400).json({ msg: 'Invalid email' });
+
         const user = await User.findOne({ email });
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ msg: "User not found" });
 
         user.resetToken = Math.random().toString(36);
-        user.verifyTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        user.verifyTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
         await user.save();
 
-        // Sửa lỗi URL sai
         const resetLink = `http://localhost:3000/api/users/password/reset/${user.resetToken}`;
-        const emailContent = `<p>Click link to reset your password:</p><a href="${resetLink}">${resetLink}</a>`;
-        await sendEmail(email, 123123, emailContent);
+        await sendEmail(email, "Password Reset", `<p>Click link to reset your password:</p><a href="${resetLink}">${resetLink}</a>`);
 
-        res.json({ message: "Please check your email for reset instructions" });
+        res.json({ msg: "Please check your email for reset instructions" });
     } catch (error) {
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ msg: "Server error" });
     }
 });
 
