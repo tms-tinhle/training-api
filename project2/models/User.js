@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ["admin", "user"], default: "user" },
+    role: { type: String, enum: ["admin", "user", ], default: "user" },
     isVerified: { type: Boolean, default: false }, // Xác thực email
     resetToken: String, // Token đặt lại mật khẩu
     resetTokenExpires: Date, // Hạn sử dụng resetToken
