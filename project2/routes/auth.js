@@ -24,9 +24,18 @@ const sendEmail = async (to, subject, text) => {
 // Đăng ký
 router.post('/register', async (req, res) => {
     try {
+        console.log(123); // Kiểm tra dữ liệu đầu vào
         const { name, email, password, role } = req.body;
-        if (!isValidName(name) || !isValidEmail(email) || !isValidPassword(password)) {
-            return res.status(400).json({ msg: 'Invalid input data' });
+        console.log(req.body); // Kiểm tra dữ liệu đầu vào
+
+        let errors = [];
+
+        if (!isValidName(name)) errors.push("Invalid name (Only letters and spaces allowed).");
+        // if (!isValidEmail(email)) errors.push("Invalid email format.");
+        if (!isValidPassword(password)) errors.push("Password must be at least 8 characters, include uppercase, lowercase, number, and special character.");
+
+        if (errors.length > 0) {
+            return res.status(400).json({ msg: "Invalid input data", errors });
         }
 
         const existingUser = await User.findOne({ email });
@@ -46,6 +55,7 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ msg: err.message });
     }
 });
+
 
 // Xác thực email
 router.get('/verify/:token', async (req, res) => {
@@ -70,9 +80,9 @@ router.get('/verify/:token', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        if (!isValidEmail(email) || !isValidPassword(password)) {
-            return res.status(400).json({ msg: 'Invalid credentials' });
-        }
+        // if (!isValidEmail(email) || !isValidPassword(password)) {
+        //     return res.status(400).json({ msg: 'Invalid credentials' });
+        // }
 
         const user = await User.findOne({ email });
         if (!user || !user.checkPassword(password)) return res.status(400).json({ msg: "Invalid credentials" });
